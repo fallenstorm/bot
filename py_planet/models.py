@@ -31,6 +31,6 @@ class UserGroupModel(models.Model):
     detection_datetime = models.DateTimeField(u'Detection datetime', default=timezone.now)
 
     class Meta:
-        index_together = [
+        unique_together = (
             ['user', 'group']
-        ]
+        )

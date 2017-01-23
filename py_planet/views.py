@@ -12,6 +12,7 @@ from django.views.generic import View
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django.conf import settings
+from django.db.utils import IntegrityError
 
 from py_planet.models import TgGroup, TgUser, UserGroupModel
 
@@ -59,9 +60,9 @@ class CommandReceiveView(View):
                 user = payload['message']['from']
 
                 add_user_group(chat, user)
-                # fuck(chat, user)
+                fuck(payload)
                 print('chat id {}'.format(chat.get('id')))
-                cmd = payload['message'].get('text')  # command
+                # cmd = payload['message'].get('text')  # command
                 # pattern = re.compile(u'^!выебать')
                 # if pattern.match(cmd):
                 #     print('MATCH------------------')
@@ -106,12 +107,19 @@ def add_user_group(chat, user):
                 title=chat.get('title')
             )
 
-        UserGroupModel.objects.create(
-            user=db_user,
-            group=db_group
-        )
+        try:
+            UserGroupModel.objects.create(
+                user=db_user,
+                group=db_group
+            )
+        except IntegrityError:
+            pass
 
 
-def fuck(chat, user):
+def fuck(payload):
+    print('FUCK')
+    cmd = payload['message'].get('text').split(' ')
+    print(cmd)
     pattern = re.compile(u'^!выебать')
-                # if pattern.match(cmd):
+    if pattern.match(cmd[0]):
+        TelegramBot.sendMessage(payload['message']['chat']['id'], '/me отжарил {}'.format(cmd[1]))
